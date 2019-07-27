@@ -16,7 +16,7 @@
         Width="640"
         WindowStartupLocation="Manual"
         SizeToContent="Height"
-        Title="DbRestorer">
+        Title="{Binding ApplicationTitle}">
     <Window.DataContext>
         <Binding Path="MainWindowVm" Source="{StaticResource ViewModelLocator}"/>
     </Window.DataContext>

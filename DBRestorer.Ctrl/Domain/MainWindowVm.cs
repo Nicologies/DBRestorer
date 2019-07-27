@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using DBRestorer.Ctrl.Model;
 using DBRestorer.Plugin.Interface;
@@ -35,6 +38,15 @@ namespace DBRestorer.Ctrl.Domain
                     _userPreferencePersist.SavePreference(pref);
                 }
             };
+        }
+
+        public string ApplicationTitle
+        {
+            get
+            {
+                var ver = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductVersion;
+                return $"DBRestorer v{ver}";
+            }
         }
 
         public void LoadPlugins()
