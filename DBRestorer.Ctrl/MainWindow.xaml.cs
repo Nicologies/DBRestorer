@@ -144,6 +144,8 @@ namespace DBRestorer.Ctrl
             Left = desktopWorkingArea.Right - Width - 20;
             Top = desktopWorkingArea.Bottom - Height - 20;
 
+            await _viewModel.AutoUpdate();
+
             try
             {
                 _viewModel.ProgressDesc = "Updating Plugins";

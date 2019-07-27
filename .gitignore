@@ -184,3 +184,5 @@ Sharpcuz/attachments/*
 .nuget
 .vs/
 *.nupkg
+/DBRestorer/temp/
+/DBRestorer/Releases

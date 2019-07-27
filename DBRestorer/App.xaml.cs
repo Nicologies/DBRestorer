@@ -19,6 +19,7 @@ namespace DBRestorer
     {
         public App()
         {
+            AutoUpdateSource.Source = new AutoUpdateFromGitHubRelease();
             ViewModelLocator.BootStrap();
         }
 

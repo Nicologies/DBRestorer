@@ -117,6 +117,7 @@
   <ItemGroup>
     <Compile Include="Domain\DbRestoreOptVm.cs" />
     <Compile Include="Domain\ErrorMsg.cs" />
+    <Compile Include="Domain\AutoUpdateSource.cs" />
     <Compile Include="Domain\ISQLServerUtil.cs" />
     <Compile Include="Domain\MainWindowVm.cs" />
     <Compile Include="Domain\ExecutionOrderProvider.cs" />
