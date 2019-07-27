@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using DBRestorer.Ctrl.Model;
@@ -82,6 +83,26 @@ namespace DBRestorer.Ctrl.Domain
         {
             get { return _IsProcessing; }
             set { RaiseAndSetIfChanged(ref _IsProcessing, value); }
+        }
+
+        public async Task AutoUpdate()
+        {
+            Start(true, "Checking new release");
+            try
+            {
+                if (await AutoUpdateSource.Source.Update(i => Percent = i))
+                {
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessengerInstance.Send(new ErrorMsg($"Failed to check new release {ex}"));
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
         }
 
         public ObservableCollection<string> PostRestorePlugins
