@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Nicologies")]
 [assembly: AssemblyProduct("Nicologies.DBRestorer.Plugin.Interface")]
-[assembly: AssemblyCopyright("Copyright Nicologies ©2016")]
+[assembly: AssemblyCopyright("Copyright Nicologies © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
