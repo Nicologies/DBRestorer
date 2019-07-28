@@ -9,7 +9,7 @@
 
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
 
-        <description>A tool to restore SQLServer database with post restore plugins</description>
+        <description>DBRestorer</description>
 
         <copyright>$copyright$</copyright>
 
