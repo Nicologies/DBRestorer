@@ -1,7 +1,9 @@
 $ErrorActionPreference = 'Stop'
-$distFolder = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('./dist/')
-if(Test-Path $distFolder){
-    Remove-Item $distFolder -Force -Recurse 
+msbuild '/t:restore;build' DBRestorer.sln /m /p:Configuration=Release
+if($LastExitCode -ne 0)
+{
+    $err = "Failed to build, error " + $LastExitCode.ToString()
+    Write-Error $err
+    Exit $LastExitCode
 }
-msbuild '/t:restore;build;publish' DBRestorer.sln /m /p:Configuration=Release
-Copy-Item -Force -Recurse "./DBRestorer/bin/Release/app.publish" $distFolder
+. $PSScriptRoot/DBRestorer/CreateInstaller.ps1

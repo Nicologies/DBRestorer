@@ -1,0 +1,60 @@
+version: 2.0.7189.{build}
+
+os: Visual Studio 2017
+
+skip_tags: true
+
+environment:
+  matrix:
+  - IdeVersion: VS2017
+  SKIP_PAUSE: TRUE
+  ARCHIVE_WITH_PDB: TRUE
+  ARTIFACT_SIGNING_ENABLED: TRUE
+
+# Build settings, not to be confused with "before_build" and "after_build".
+# "project" is relative to the original build directory and not influenced by directory changes in "before_build".
+build:
+  # enable MSBuild parallel builds
+  parallel: true
+  # MSBuild verbosity level
+  verbosity: minimal
+
+install:
+- cmd: git submodule update --init --recursive
+- cmd: echo /logger:"%ProgramFiles%\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll">> Directory.Build.rsp
+- ps: |
+    & .\SetVersion.ps1 -version $env:APPVEYOR_BUILD_VERSION
+
+
+# to run your custom scripts instead of automatic MSBuild
+build_script:
+- ps: |
+    Write-Output "Platform: $env:IdeVersion"
+
+    # for release branches mark the repo as clean
+    if (!$env:APPVEYOR_PULL_REQUEST_TITLE -and $env:APPVEYOR_REPO_BRANCH.StartsWith("release/")) {
+      git clean -dxf
+    }
+
+    # build
+    & .\Build.ps1
+    & .\DBRestorer.Plugin.Interface\CreateNugetPackages.ps1
+
+artifacts:
+  # upload the generated portable archive only
+  - path: 'DBRestorer.Plugin.Interface\dist\*.nupkg'
+  - path: 'DBRestorer\Releases\*'
+
+deploy:
+  release: $(APPVEYOR_BUILD_VERSION)
+  description: ""
+  provider: GitHub
+  auth_token:
+    secure: rXu9qtKcQQGqMciH1aloVBxwqYuiqrtLd04CYPey4hKMu2AN9Mtl4j+98dPP+V1r
+  artifact: /.*/
+  draft: false
+  prerelease: true
+  APPVEYOR_REPO_TAG: false
+  on:
+    branch: /release\/.*/
+

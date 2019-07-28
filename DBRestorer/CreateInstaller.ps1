@@ -1,14 +1,9 @@
 $ErrorActionPreference = 'Stop'
+Set-StrictMode -Version latest
 
 if(Test-Path "$PSScriptRoot/Releases")
 {
     Remove-Item -Force -Recurse "$PSScriptRoot/Releases"
-}
-
-if(Test-Path "$PSScriptRoot/bin/Release")
-{
-	# SilentlyContinue as no sure why powershell locks the dbrestore.exe
-    Remove-Item -Force -Recurse "$PSScriptRoot/bin/Release" -ErrorAction SilentlyContinue
 }
 
 $squirrelInstallFolder = "$PSScriptRoot/temp"
@@ -16,16 +11,16 @@ if(Test-Path $squirrelInstallFolder)
 {
     Remove-Item -Force -Recurse $squirrelInstallFolder
 }
-
-# for squirrel that requires semver
-nuget pack -OutputDirectory $PSScriptRoot -Properties Configuration=Release -Build
-nuget install squirrel.windows -ExcludeVersion -OutputDirectory $squirrelInstallFolder
-
 $dbRestorerRelativePath = "$PSScriptRoot/bin/Release/DBRestorer.exe"
 $dbRestorerAbsolutePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($dbRestorerRelativePath)
 $assembly = [Reflection.Assembly]::Loadfile($dbRestorerAbsolutePath)
 $version = [Version]$assembly.GetName().version
 $nugetSemVer = $version.Major.ToString() + "." + $version.Minor + "." + $version.Build
+
+# for squirrel that requires semver
+nuget pack "$PSScriptRoot/DBRestorer.csproj" -OutputDirectory $PSScriptRoot `
+    -Properties Configuration=Release -Version $nugetSemVer
+nuget install squirrel.windows -ExcludeVersion -OutputDirectory $squirrelInstallFolder
 
 function ExecuteProcessAndWait([string]$processFileName, [string]$processParameters, [string]$workingDirectory)
 {
@@ -62,5 +57,5 @@ if($exitcode -ne 0)
 {
     $err = "Failed to create auto update files, error " + $exitcode.ToString()
     Write-Error $err
-    Exit $exitcode
+    throw $err
 }
