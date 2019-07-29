@@ -23,6 +23,12 @@ install:
 - cmd: git submodule update --init --recursive
 - cmd: echo /logger:"%ProgramFiles%\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll">> Directory.Build.rsp
 - ps: |
+    if ($env:APPVEYOR_REPO_BRANCH.StartsWith("release/")) {
+       $ver = $env:APPVEYOR_REPO_BRANCH.Replace("release/", "")
+       $env:APPVEYOR_BUILD_VERSION = "$ver.$($env:APPVEYOR_BUILD_NUMBER)"
+       Update-AppveyorBuild -Version $env:APPVEYOR_BUILD_VERSION       
+    }
+    
     & .\SetVersion.ps1 -version $env:APPVEYOR_BUILD_VERSION
 
 
