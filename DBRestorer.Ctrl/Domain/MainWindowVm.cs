@@ -99,13 +99,19 @@ namespace DBRestorer.Ctrl.Domain
 
         public async Task AutoUpdate()
         {
+            var lastUpdateCheckTime = GetLastUpdateCheckTime();
+            var checkedRecently = lastUpdateCheckTime >= DateTime.Now.AddDays(-1);
+            if (checkedRecently)
+            {
+                return;
+            }
+
             Start(true, "Checking new release");
             try
             {
-                if (await AutoUpdateSource.Source.Update(i => Percent = i))
-                {
+                SaveLastUpdateCheckTime();
 
-                }
+                await AutoUpdateSource.Source.Update(i => Percent = i);
             }
             catch (Exception ex)
             {
@@ -115,6 +121,21 @@ namespace DBRestorer.Ctrl.Domain
             {
                 IsProcessing = false;
             }
+        }
+
+        private DateTime GetLastUpdateCheckTime()
+        {
+            var pref = _userPreferencePersist.LoadPreference();
+
+            var lastUpdateCheckTime = (pref.LastUpdateCheckTime ?? DateTime.MinValue);
+            return lastUpdateCheckTime;
+        }
+
+        private void SaveLastUpdateCheckTime()
+        {
+            var pref = _userPreferencePersist.LoadPreference();
+            pref.LastUpdateCheckTime = DateTime.Now;
+            _userPreferencePersist.SavePreference(pref);
         }
 
         public ObservableCollection<string> PostRestorePlugins
