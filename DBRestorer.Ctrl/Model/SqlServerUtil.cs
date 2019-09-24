@@ -8,7 +8,7 @@ using Nicologies.SqlServerUtils.Metadata;
 
 namespace DBRestorer.Ctrl.Model
 {
-	public class SqlServerUtil : ISqlServerUtil
+    public class SqlServerUtil : ISqlServerUtil
     {
         public static readonly string FinishedRestore = "Finished Restoring.";
 		private readonly SqlServerInstanceNames _instancesProvider = new SqlServerInstanceNames();
