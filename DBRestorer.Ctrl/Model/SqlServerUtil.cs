@@ -11,17 +11,17 @@ namespace DBRestorer.Ctrl.Model
     public class SqlServerUtil : ISqlServerUtil
     {
         public static readonly string FinishedRestore = "Finished Restoring.";
-		private readonly SqlServerInstanceNames _instancesProvider = new SqlServerInstanceNames();
-		private readonly SqlServerDatabases _databasesProvider = new SqlServerDatabases();
+        private readonly SqlServerInstanceNames _instancesProvider = new SqlServerInstanceNames();
+        private readonly SqlServerDatabases _databasesProvider = new SqlServerDatabases();
 
         public override List<string> GetSqlInstances()
         {
-			return _instancesProvider.GetSqlInstances();
+            return _instancesProvider.GetSqlInstances();
         }
 
         public override List<string> GetDatabaseNames(string instanceName)
         {
-			return _databasesProvider.GetDatabaseNames(instanceName);
+            return _databasesProvider.GetDatabaseNames(instanceName);
         }
 
         public override async Task Restore(DbRestorOptions opt, IProgressBarProvider progressBarProvider,
