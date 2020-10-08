@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using DBRestorer.Ctrl.Model;
+using DBRestorer.Ctrl.PluginManagement;
 using DBRestorer.Plugin.Interface;
 using ExtendedCL;
 using GalaSoft.MvvmLight.Threading;

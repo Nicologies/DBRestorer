@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using DBRestorer.Ctrl;
+using DBRestorer.Ctrl.PluginManagement;
 using DBRestorer.Plugin.Interface;
 using Nicologies.WpfCommon.Utils;
 

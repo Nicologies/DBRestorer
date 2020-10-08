@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using DBRestorer.Ctrl;
 using DBRestorer.Ctrl.Domain;
+using DBRestorer.Ctrl.PluginManagement;
 using DBRestorer.Plugin.Interface;
 using GalaSoft.MvvmLight.Command;
 using PropertyChanged;

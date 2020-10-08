@@ -9,6 +9,7 @@ using GalaSoft.MvvmLight.Threading;
 using Microsoft.Win32;
 using DBRestorer.Ctrl;
 using DBRestorer.Ctrl.Domain;
+using DBRestorer.Ctrl.PluginManagement;
 
 namespace DBRestorer
 {
@@ -36,13 +37,7 @@ namespace DBRestorer
 
             var userPrefPersister = new UserPreferencePersist();
             var pref = userPrefPersister.LoadPreference();
-            const string HelixLeisureExtensionPath = @"\\was29\Shared\ECSDBToolsExtensions";
 
-            if (string.IsNullOrWhiteSpace(pref.PluginDownloadPath) && Directory.Exists(HelixLeisureExtensionPath))
-            {
-                pref.PluginDownloadPath = HelixLeisureExtensionPath;
-                userPrefPersister.SavePreference(pref);
-            }
             if (!string.IsNullOrWhiteSpace(pref.PluginDownloadPath))
             {
                 try

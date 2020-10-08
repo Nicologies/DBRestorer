@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using DBRestorer.Ctrl.Domain;
@@ -10,6 +11,12 @@ namespace DBRestorer
     {
         public async Task<bool> Update(Action<int> progressReport)
         {
+            if (Debugger.IsAttached)
+            {
+                // app is trying to upgrade itself.
+                Debugger.Break();
+                return false;
+            }
             using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/Nicologies/DbRestorer"))
             {
                 var updated = await mgr.UpdateApp(progressReport) != null;

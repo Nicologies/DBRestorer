@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using DBRestorer.Ctrl.PluginManagement;
 using DBRestorer.Plugin.Interface;
 using Nicologies;
 using PropertyChanged;

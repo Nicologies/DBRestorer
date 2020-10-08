@@ -1,16 +1,16 @@
-﻿using Nicologies;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.VisualBasic.FileIO;
 using System.Threading.Tasks;
 using DBRestorer.Plugin.Interface;
+using Microsoft.VisualBasic.FileIO;
+using Nicologies;
 
-namespace DBRestorer.Ctrl
+namespace DBRestorer.Ctrl.PluginManagement
 {
     public static class Plugins
     {

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using DBRestorer.Ctrl.Domain;
+using DBRestorer.Ctrl.PluginManagement;
 using DBRestorer.Plugin.Interface;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
