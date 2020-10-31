@@ -12,6 +12,9 @@
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <PackageProjectUrl>https://github.com/Nicologies/DBRestorer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Nicologies/DBRestorer</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,6 +54,11 @@
     <Compile Include="IPostDbRestore.cs" />
     <Compile Include="OutOfProcessPluginRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
