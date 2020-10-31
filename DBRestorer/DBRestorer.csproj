@@ -81,7 +81,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AutoUpdateFromGitHubRelease.cs" />
-    <Compile Include="PluginDownloaderHelper.cs" />
     <Compile Include="UnZipHelper.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright Nicologies © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: InternalsVisibleTo("Plugin_DbRestorerConfig")]
+[assembly: InternalsVisibleTo("Plugin_OpenInSSMS")]
+[assembly: InternalsVisibleTo("DBRestorer.Ctrl")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

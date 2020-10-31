@@ -147,28 +147,7 @@ namespace DBRestorer.Ctrl
 
             await _viewModel.AutoUpdate();
 
-            try
-            {
-                _viewModel.ProgressDesc = "Updating Plugins";
-                _viewModel.IsProcessing = true;
-                await Plugins.Update();
-            }
-            catch (Exception ex)
-            {
-                MessageBoxHelper.ShowError(this,  
-                $"Unable to update plugins from {Plugins.UpdatesFolder}{Environment.NewLine}"
-                + $"If the problem persists, please delete the above folder{Environment.NewLine}"
-                +$"{ex}");
-            }
-            finally
-            {
-                _viewModel.ProgressDesc = "";
-                _viewModel.IsProcessing = false;
-            }
-
             _viewModel.LoadPlugins();
-
-            DownloadPluginUpdatesInBackground();
 
             try
             {
@@ -182,11 +161,6 @@ namespace DBRestorer.Ctrl
             {
                 MessageBoxHelper.ShowError(this, ex.ToString());
             }
-        }
-
-        private static void DownloadPluginUpdatesInBackground()
-        {
-            Task.Factory.StartNew(Plugins.DownloadAllPlugins);
         }
 
         private bool OnMenuClicked(int menuId)

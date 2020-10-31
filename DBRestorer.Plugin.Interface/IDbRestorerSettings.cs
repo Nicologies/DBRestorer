@@ -5,7 +5,7 @@ namespace DBRestorer.Plugin.Interface
     /// <summary>
     /// Interface of settings for plugin
     /// </summary>
-    public interface IDbRestorerSettings
+    internal interface IDbRestorerSettings
     {
         /// <summary>
         /// The name of the settings

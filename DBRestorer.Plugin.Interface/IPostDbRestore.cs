@@ -5,7 +5,7 @@ namespace DBRestorer.Plugin.Interface
     /// <summary>
     /// Plugin interface called after database restored.
     /// </summary>
-    public interface IPostDbRestore 
+    internal interface IPostDbRestore 
     {
         /// <summary>
         /// Event handler when database restored successfully.

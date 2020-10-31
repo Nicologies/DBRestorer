@@ -5,7 +5,7 @@ namespace DBRestorer.Plugin.Interface
     /// <summary>
     /// Db Utility that can be invoked by DbRestorer
     /// </summary>
-    public interface IDbUtility
+    internal interface IDbUtility
     {
         /// <summary>
         /// Invoke this utility with the given parameters

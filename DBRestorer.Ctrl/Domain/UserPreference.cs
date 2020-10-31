@@ -7,7 +7,6 @@ namespace DBRestorer.Ctrl.Domain
     {
         public string LastUsedDbInst { get; set; }
         public string LastUsedDbName { get; set; }
-        public string PluginDownloadPath { get; set; }
         public DateTime? LastUpdateCheckTime { get; set; }
     }
 }

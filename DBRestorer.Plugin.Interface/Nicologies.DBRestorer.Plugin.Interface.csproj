@@ -49,7 +49,7 @@
     <Compile Include="IDbRestorerSettings.cs" />
     <Compile Include="IDbUtility.cs" />
     <Compile Include="IPostDbRestore.cs" />
-    <Compile Include="IPluginUpdatesDownloader.cs" />
+    <Compile Include="OutOfProcessPluginRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

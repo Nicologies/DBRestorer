@@ -5,9 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Windows;
 using DBRestorer.Plugin.Interface;
-using Microsoft.VisualBasic.FileIO;
 using Nicologies;
 
 namespace DBRestorer.Ctrl.PluginManagement
@@ -15,17 +14,103 @@ namespace DBRestorer.Ctrl.PluginManagement
     public static class Plugins
     {
         private static List<CompositionContainer> _pluginContainers;
-        public static readonly string PluginFolderPath = Path.Combine(PathHelper.ProcessAppDir, "Plugins");
-        public static readonly string UpdatesFolder = Path.Combine(PathHelper.ProcessAppDir, "updates");
-        private static readonly string DownloadFolder = Path.Combine(PathHelper.ProcessAppDir, "download_temp");
+        private static readonly Dictionary<Type, List<object>> OutOfProcPlugins
+            = new Dictionary<Type, List<object>>();
+
+        private class OutOfProcessPluginAdapterBase 
+        {
+            private readonly PluginMetaData _meta;
+
+            protected OutOfProcessPluginAdapterBase(PluginMetaData meta)
+            {
+                _meta = meta;
+            }
+            protected void Execute(string sqlInstName, string dbName, bool waitForExit)
+            {
+                var workingDir = Path.GetDirectoryName(_meta.Path);
+                var info = new ProcessStartInfo
+                {
+                    WorkingDirectory = workingDir ?? string.Empty,
+                    FileName = _meta.Path,
+                    Arguments = $"--sqlinstance {sqlInstName} --database {dbName}"
+                };
+
+                using (var process = Process.Start(info))
+                {
+                    if (waitForExit)
+                    {
+                        process?.WaitForExit();
+                    }
+                }
+            }
+
+            public string PluginName => _meta.Name;
+        }
+
+        private class OutOfProcessPostRestorePluginAdapter : OutOfProcessPluginAdapterBase, IPostDbRestore
+        {
+            public OutOfProcessPostRestorePluginAdapter(PluginMetaData meta) : base(meta)
+            {
+            }
+
+            public void OnDBRestored(Window parentWnd, string sqlInstName, string dbName)
+            {
+                Execute(sqlInstName, dbName, waitForExit: true);
+            }
+        }
+
+        private class OutOfProcessUtilityPluginAdapter : OutOfProcessPluginAdapterBase, IDbUtility
+        {
+            public OutOfProcessUtilityPluginAdapter(PluginMetaData meta) : base(meta)
+            {
+            }
+            public void Invoke(Window parentWnd, string sqlInstName, string dbName)
+            {
+                Execute(sqlInstName, dbName, waitForExit: false);
+            }
+        }
 
         private static void LoadPlugins()
         {
-            if (_pluginContainers == null)
+            if (_pluginContainers != null) return;
+
+            _pluginContainers = new List<CompositionContainer>();
+            LoadPluginsFromFolder(PathHelper.ProcessDir);
+
+            LoadOutOfProcessPlugins();
+        }
+
+        private static void LoadOutOfProcessPlugins()
+        {
+            void Add(Type t, object adapter)
             {
-                _pluginContainers = new List<CompositionContainer>();
-                LoadPluginsFromFolder(PluginFolderPath);
-                LoadPluginsFromFolder(PathHelper.ProcessDir);
+                if (!OutOfProcPlugins.ContainsKey(t))
+                {
+                    OutOfProcPlugins.Add(t, new List<object>
+                    {
+                        adapter
+                    });
+                }
+                else
+                {
+                    OutOfProcPlugins[t].Add(adapter);
+                }
+            }
+            var plugins = OutOfProcessPluginRegistration.GetPlugins();
+            foreach (var p in plugins)
+            {
+                switch (p.Type)
+                {
+                    case PluginType.PostRestore:
+                        Add(typeof(IPostDbRestore), new OutOfProcessPostRestorePluginAdapter(p));
+                        break;
+                    case PluginType.Utility:
+                        Add(typeof(IDbUtility), p);
+                        Add(typeof(IPostDbRestore), new OutOfProcessUtilityPluginAdapter(p));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 
@@ -51,94 +136,16 @@ namespace DBRestorer.Ctrl.PluginManagement
                 catch (ReflectionTypeLoadException ex)
                 {
                     Trace.TraceError("GetExports() failed {0}",
-                        String.Join(Environment.NewLine, ex.LoaderExceptions.Select(r => r.ToString())));
+                        string.Join(Environment.NewLine, ex.LoaderExceptions.Select(r => r.ToString())));
                 }
                 catch (Exception ex)
                 {
                     Trace.TraceError("Failed to get exports, {0}", ex.ToString());
                 }
             }
+            ret.AddRange(OutOfProcPlugins.Where(x => x.Key == typeof(T))
+                .SelectMany(x => x.Value).Select(x => new Lazy<T>(() => (T)x)));
             return ret;
-        }
-
-        public static Task Update()
-        {
-            return Task.Run(() =>
-            {
-                if (!Directory.Exists(UpdatesFolder))
-                {
-                    return;
-                }
-
-                if (!Directory.Exists(Plugins.PluginFolderPath))
-                {
-                    return;
-                }
-                FileSystem.CopyDirectory(UpdatesFolder, Plugins.PluginFolderPath, overwrite: true);
-                Directory.Delete(UpdatesFolder, recursive: true);
-                Directory.CreateDirectory(UpdatesFolder);
-            });
-        }
-
-        public static string GetCurFingerPrint(string pluginIdentity)
-        {
-            var filePath = Path.Combine(PluginFolderPath, GetFingerprintFileName(pluginIdentity));
-            if (File.Exists(filePath))
-            {
-                return File.ReadAllText(filePath);
-            }
-            return "";
-        }
-
-        private static string GetFingerprintFileName(string pluginIdentity)
-        {
-            return $"{pluginIdentity}.fingerprint";
-        }
-
-        public static void SetFingerprint(string pluginIdentity, string fingerprint,
-            string folderToStoreTheFingerprint)
-        {
-            var filePath = Path.Combine(folderToStoreTheFingerprint, GetFingerprintFileName(pluginIdentity));
-            File.WriteAllText(filePath, fingerprint);
-        }
-
-        public static void DownloadAllPlugins()
-        {
-            var downloaders = Plugins.GetPlugins<IPluginUpdatesDownloader>();
-            foreach (var downloader in downloaders)
-            {
-                try
-                {
-                    DownloadOnePlugin(downloader);
-                }
-                catch
-                {
-                    // ignore
-                }
-            }
-        }
-
-        private static void DownloadOnePlugin(Lazy<IPluginUpdatesDownloader> downloader)
-        {
-            RecreateTempDownloadFolder();
-            var fingerPrint = GetCurFingerPrint(downloader.Value.GetType().FullName);
-            var newFingerprint = downloader.Value.Download(DownloadFolder, fingerPrint);
-            if (!string.IsNullOrWhiteSpace(newFingerprint))
-            {
-                SetFingerprint(downloader.Value.GetType().FullName,
-                    newFingerprint, DownloadFolder);
-
-                FileSystem.CopyDirectory(DownloadFolder, UpdatesFolder, overwrite: true);
-            }
-        }
-
-        private static void RecreateTempDownloadFolder()
-        {
-            if (Directory.Exists(Plugins.DownloadFolder))
-            {
-                Directory.Delete(Plugins.DownloadFolder, recursive: true);
-            }
-            Directory.CreateDirectory(Plugins.DownloadFolder);
         }
     }
 }

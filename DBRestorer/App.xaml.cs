@@ -30,45 +30,13 @@ namespace DBRestorer
             {
                 Directory.CreateDirectory(PathHelper.ProcessAppDir);
             }
-            if (!Directory.Exists(Plugins.PluginFolderPath))
-            {
-                Directory.CreateDirectory(Plugins.PluginFolderPath);
-            }
 
-            var userPrefPersister = new UserPreferencePersist();
-            var pref = userPrefPersister.LoadPreference();
+            var userPreferencePersist = new UserPreferencePersist();
+            var pref = userPreferencePersist.LoadPreference();
 
-            if (!string.IsNullOrWhiteSpace(pref.PluginDownloadPath))
-            {
-                try
-                {
-                    PluginDownloaderHelper.Download(pref.PluginDownloadPath);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString());
-                }
-            }
-            AppDomain.CurrentDomain.AssemblyResolve += LoadFromPluginFolder;
             DispatcherHelper.Initialize();
             base.OnStartup(e);
-            Task.Run(() => SetAddRemoveProgramsIcon());
-        }
-
-        private Assembly LoadFromPluginFolder(object sender, ResolveEventArgs args)
-        {
-            string assemblyPath = Path.Combine(Plugins.PluginFolderPath,
-                $"{new AssemblyName(args.Name).Name}.dll");
-            if (!File.Exists(assemblyPath))
-            {
-                assemblyPath = Path.Combine(Plugins.PluginFolderPath,
-                    $"{new AssemblyName(args.Name).Name}.exe");
-                if (!File.Exists(assemblyPath))
-                {
-                    return null;
-                }
-            }
-            return Assembly.LoadFrom(assemblyPath);
+            Task.Run(SetAddRemoveProgramsIcon);
         }
 
         private static void SetAddRemoveProgramsIcon()
