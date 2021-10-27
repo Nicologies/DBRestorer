@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <LangVersion Condition="$(MSBuildProjectExtension)=='.csproj'">latest</LangVersion>
+  </PropertyGroup>
+</Project>
