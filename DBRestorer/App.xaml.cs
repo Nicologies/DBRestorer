@@ -73,7 +73,7 @@ namespace DBRestorer
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //log an error
                 }
