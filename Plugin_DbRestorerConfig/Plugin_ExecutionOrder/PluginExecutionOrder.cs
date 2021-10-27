@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.Composition;
 using System.Windows;
 using DBRestorer.Plugin.Interface;
+using Plugin_DbRestorerConfig.Plugin_ExecutionOrder;
 
-namespace Plugin_DbRestorerConfig.Plugin_ExecutionOrder
+namespace Plugin_DbRestorer.Plugin_ExecutionOrder
 {
     [Export(typeof(IDbRestorerSettings))]
     [PartCreationPolicy(CreationPolicy.NonShared)]
