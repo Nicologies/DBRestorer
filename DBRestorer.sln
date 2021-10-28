@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBRestorer.Ctrl", "DBRestor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nicologies.DBRestorer.Plugin.Interface", "DBRestorer.Plugin.Interface\Nicologies.DBRestorer.Plugin.Interface.csproj", "{05512917-CB75-4717-AEE1-B56612C31AB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin_DbRestorer", "Plugin_DbRestorerConfig\Plugin_DbRestorer.csproj", "{4B696091-DC1F-47E5-AA14-527A5058D499}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin_DbRestorer", "Plugin_DbRestorer\Plugin_DbRestorer.csproj", "{4B696091-DC1F-47E5-AA14-527A5058D499}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

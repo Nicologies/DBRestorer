@@ -124,7 +124,7 @@
       <Project>{e4142c9c-2afd-4579-97e2-767f3196ac4e}</Project>
       <Name>ExtendedCL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Plugin_DbRestorerConfig\Plugin_DbRestorer.csproj">
+    <ProjectReference Include="..\Plugin_DbRestorer\Plugin_DbRestorer.csproj">
       <Project>{4b696091-dc1f-47e5-aa14-527a5058d499}</Project>
       <Name>Plugin_DbRestorer</Name>
     </ProjectReference>
