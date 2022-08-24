@@ -22,6 +22,7 @@ namespace DBRestorer.Ctrl.Domain
                 }
                 var fileName = Path.GetFileNameWithoutExtension(_SrcPath);
                 TargetDbName = fileName;
+                GenerateMdfLdfFilePath();
             }
         }
 
@@ -32,13 +33,18 @@ namespace DBRestorer.Ctrl.Domain
             {
                 _TargetDbName = value;
                 RaisePropertyChanged();
-                if (!string.IsNullOrWhiteSpace(value)
-                    && !string.IsNullOrWhiteSpace(_SrcPath))
-                {
-                    var dir = Path.GetDirectoryName(_SrcPath);
-                    RelocateLdfTo = Path.Combine(dir, TargetDbName + "_log.ldf");
-                    RelocateMdfTo = Path.Combine(dir, TargetDbName + ".mdf");
-                }
+                GenerateMdfLdfFilePath();
+            }
+        }
+
+        private void GenerateMdfLdfFilePath()
+        {
+            if (!string.IsNullOrWhiteSpace(_TargetDbName)
+                && !string.IsNullOrWhiteSpace(_SrcPath))
+            {
+                var dir = Path.GetDirectoryName(_SrcPath);
+                RelocateLdfTo = Path.Combine(dir, TargetDbName + "_log.ldf");
+                RelocateMdfTo = Path.Combine(dir, TargetDbName + ".mdf");
             }
         }
 
