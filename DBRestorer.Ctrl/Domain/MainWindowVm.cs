@@ -98,20 +98,15 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
             return;
         }
 
-        Start(true, "Checking new release");
         try
         {
             SaveLastUpdateCheckTime();
 
-            await AutoUpdateSource.Source.Update(i => Percent = i);
+            await AutoUpdateSource.Source.Update(_ => { });
         }
         catch (Exception ex)
         {
             MessengerInstance.Send(new ErrorMsg($"Failed to check new release {ex}"));
-        }
-        finally
-        {
-            IsProcessing = false;
         }
     }
 

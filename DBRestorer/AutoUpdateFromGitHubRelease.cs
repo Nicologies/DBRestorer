@@ -23,7 +23,6 @@ namespace DBRestorer
                 if (updated)
                 {
                     RemoveLegacyClickOnceFiles();
-                    UpdateManager.RestartApp();
                 }
 
                 return updated;
