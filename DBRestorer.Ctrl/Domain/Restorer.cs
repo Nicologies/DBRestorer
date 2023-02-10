@@ -5,14 +5,14 @@ namespace DBRestorer.Ctrl.Domain
 {
     public class Restorer
     {
-        private readonly ISqlServerUtil _sqlUtil;
+        private readonly SqlServerUtilBase _sqlUtil;
 
-        public Restorer(ISqlServerUtil sqlUtil)
+        public Restorer(SqlServerUtilBase sqlUtil)
         {
             _sqlUtil = sqlUtil;
         }
 
-        public void Restore(ISqlServerUtil.DbRestorOptions opt, IProgressBarProvider progressBarProvider,
+        public void Restore(SqlServerUtilBase.DbRestoreOptions opt, IProgressBarProvider progressBarProvider,
             Action additionalCallbackOnCompleted)
         {
             _sqlUtil.Restore(opt, progressBarProvider, additionalCallbackOnCompleted);

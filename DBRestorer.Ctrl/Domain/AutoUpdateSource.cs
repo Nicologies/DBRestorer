@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DBRestorer.Ctrl.Domain
-{
-    public interface IAutoUpdateSource
-    {
-        Task<bool> Update(Action<int> progressReport);
-    }
+namespace DBRestorer.Ctrl.Domain;
 
-    public static class AutoUpdateSource
-    {
-        public static IAutoUpdateSource Source { get; set; }
-    }
+public interface IAutoUpdateSource
+{
+    Task<bool> Update(Action<int> progressReport);
+}
+
+public static class AutoUpdateSource
+{
+    public static IAutoUpdateSource Source { get; set; }
 }

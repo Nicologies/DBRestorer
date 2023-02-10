@@ -1,13 +1,12 @@
 ﻿using NUnit.Framework;
 
-namespace DBRestorer.Test
+namespace DBRestorer.Test;
+
+[TestFixture]
+public class TestMainWindowVm
 {
-    [TestFixture]
-    public class TestMainWindowVm
+    [Test]
+    public void TestIt()
     {
-        [Test]
-        public void Testit()
-        {
-        }
     }
 }

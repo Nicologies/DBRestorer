@@ -5,13 +5,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:local="clr-namespace:Plugin_DbRestorerConfig"
         xmlns:pluginExecutionOrder="clr-namespace:Plugin_DbRestorerConfig.Plugin_ExecutionOrder"
+        xmlns:pluginExecutionOrder1="clr-namespace:Plugin_DbRestorer.Plugin_ExecutionOrder"
         mc:Ignorable="d" 
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         x:Name="ThisWnd"
         d:DesignHeight="480" d:DesignWidth="640">
     <Window.DataContext>
-        <pluginExecutionOrder:PluginExecutionOrderVm />
+        <pluginExecutionOrder1:PluginExecutionOrderVm />
     </Window.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>

@@ -1,40 +1,39 @@
-﻿namespace DBRestorer.Ctrl.Domain
+﻿namespace DBRestorer.Ctrl.Domain;
+
+public class Message
 {
-    public class Message
+    private readonly string _Msg;
+
+    public Message(string msg)
     {
-        private readonly string _Msg;
-
-        public Message(string msg)
-        {
-            _Msg = msg;
-        }
-
-        public override string ToString()
-        {
-            return _Msg;
-        }
+        _Msg = msg;
     }
 
-    public class ErrorMsg : Message
+    public override string ToString()
     {
-        public ErrorMsg(string msg) : base(msg)
-        {
-        }
+        return _Msg;
     }
+}
 
-    public class SucceedMsg : Message
+public class ErrorMsg : Message
+{
+    public ErrorMsg(string msg) : base(msg)
     {
-        public SucceedMsg(string msg)
-            : base(msg)
-        {
-        }
     }
+}
 
-    public class CallPostRestorePlugins : Message
+public class SucceedMsg : Message
+{
+    public SucceedMsg(string msg)
+        : base(msg)
     {
-        public CallPostRestorePlugins(string msg) : base(msg)
-        {
+    }
+}
 
-        }
+public class CallPostRestorePlugins : Message
+{
+    public CallPostRestorePlugins(string msg) : base(msg)
+    {
+
     }
 }
