@@ -10,31 +10,27 @@ using DBRestorer.Plugin.Interface;
 using ExtendedCL;
 using GalaSoft.MvvmLight.Threading;
 using Nicologies.WpfCommon.Utils;
+using PropertyChanged;
 
 namespace DBRestorer.Ctrl.Domain;
 
+[AddINotifyPropertyChangedInterface]
 public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 {
     private readonly ISqlServerUtil _sqlServerUtil;
     private readonly IUserPreferencePersist _userPreferencePersist;
-    private DbRestorOptVm _DbRestoreOption = new();
-    private bool _IsProcessing;
-    private int _Percent;
-    private bool _PercentageDisabled = true;
-    private string _ProgressDesc = "";
-    private SqlInstancesVm _SqlInstancesVm;
 
     public MainWindowVm(ISqlServerUtil sqlServerUtil, IUserPreferencePersist userPreferencePersist)
     {
         _sqlServerUtil = sqlServerUtil;
         _userPreferencePersist = userPreferencePersist;
         SqlInstancesVm = new SqlInstancesVm(_sqlServerUtil, this, userPreferencePersist);
-        _DbRestoreOption.PropertyChanged += (_, args) =>
+        DbRestoreOptVm.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(DbRestorOptVm.TargetDbName))
+            if (args.PropertyName == nameof(DbRestoreOptVm.TargetDbName))
             {
                 var pref = _userPreferencePersist.LoadPreference();
-                pref.LastUsedDbName = _DbRestoreOption.TargetDbName;
+                pref.LastUsedDbName = DbRestoreOptVm.TargetDbName;
                 _userPreferencePersist.SavePreference(pref);
             }
         };
@@ -63,38 +59,34 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 
     public SqlInstancesVm SqlInstancesVm
     {
-        get { return _SqlInstancesVm; }
-        private set { RaiseAndSetIfChanged(ref _SqlInstancesVm, value); }
+        get;
+        set;
     }
 
-    public DbRestorOptVm DbRestorOptVm
-    {
-        get { return _DbRestoreOption; }
-        set { RaiseAndSetIfChanged(ref _DbRestoreOption, value); }
-    }
+    public DbRestoreOptVm DbRestoreOptVm { get; set; } = new();
 
     public int Percent
     {
-        get { return _Percent; }
-        set { RaiseAndSetIfChanged(ref _Percent, value); }
+        get;
+        set;
     }
 
     public string ProgressDesc
     {
-        get { return _ProgressDesc; }
-        set { RaiseAndSetIfChanged(ref _ProgressDesc, value); }
+        get;
+        set;
     }
 
     public bool PercentageDisabled
     {
-        get { return _PercentageDisabled; }
-        set { RaiseAndSetIfChanged(ref _PercentageDisabled, value); }
-    }
+        get;
+        set;
+    } = true;
 
     public bool IsProcessing
     {
-        get { return _IsProcessing; }
-        set { RaiseAndSetIfChanged(ref _IsProcessing, value); }
+        get;
+        set;
     }
 
     public async Task AutoUpdate()
@@ -189,7 +181,7 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
         Start(false, "Initializing...");
         try
         {
-            await _sqlServerUtil.Restore(DbRestorOptVm.GetDbRestoreOption(SqlInstancesVm.SelectedInst),
+            await _sqlServerUtil.Restore(DbRestoreOptVm.GetDbRestoreOption(SqlInstancesVm.SelectedInst),
                 this, OnRestored);
         }
         catch
@@ -215,6 +207,6 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
         await SqlInstancesVm.RetrieveInstanceAsync();
         await SqlInstancesVm.RetrieveDbNamesAsync(SqlInstancesVm.SelectedInst);
         var pref = _userPreferencePersist.LoadPreference();
-        DbRestorOptVm.TargetDbName = pref.LastUsedDbName;
+        DbRestoreOptVm.TargetDbName = pref.LastUsedDbName;
     }
 }

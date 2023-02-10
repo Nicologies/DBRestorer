@@ -74,7 +74,7 @@ namespace DBRestorer.Ctrl
         {
             try
             {
-                utility.Value.Invoke(this, _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestorOptVm.TargetDbName);
+                utility.Value.Invoke(this, _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestoreOptVm.TargetDbName);
             }
             catch (Exception ex)
             {
@@ -86,7 +86,7 @@ namespace DBRestorer.Ctrl
         {
             try
             {
-                plugin.Value.OnDBRestored(this, _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestorOptVm.TargetDbName);
+                plugin.Value.OnDBRestored(this, _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestoreOptVm.TargetDbName);
             }
             catch (Exception ex)
             {
@@ -104,7 +104,7 @@ namespace DBRestorer.Ctrl
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
 
             var files = (string[]) e.Data.GetData(DataFormats.FileDrop);
-            _viewModel.DbRestorOptVm.SrcPath = files.First();
+            _viewModel.DbRestoreOptVm.SrcPath = files.First();
             txtDbName.Focus();
         }
 
@@ -187,7 +187,7 @@ namespace DBRestorer.Ctrl
             {
                 return;
             }
-            if (_viewModel.SqlInstancesVm.DbNames.Contains(_viewModel.DbRestorOptVm.TargetDbName))
+            if (_viewModel.SqlInstancesVm.DbNames.Contains(_viewModel.DbRestoreOptVm.TargetDbName))
             {
                 var choice = MessageBoxHelper.ShowConfirmation(this,
                     "The database already exists, are you sure to overwrite it?");
@@ -218,7 +218,7 @@ namespace DBRestorer.Ctrl
             var ok = dlg.ShowDialog();
             if (ok != null && ok.Value)
             {
-                _viewModel.DbRestorOptVm.SrcPath = dlg.FileName;
+                _viewModel.DbRestoreOptVm.SrcPath = dlg.FileName;
             }
         }
 
@@ -231,7 +231,7 @@ namespace DBRestorer.Ctrl
                 var pluginName = ((MenuItem)e.OriginalSource).Header.ToString();
                 var plugin = Plugins.GetPlugins<IPostDbRestore>().FirstOrDefault(r => r.Value.PluginName == pluginName);
                 plugin?.Value.OnDBRestored(this,
-                    _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestorOptVm.TargetDbName);
+                    _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestoreOptVm.TargetDbName);
             }
             catch(Exception ex){
                 MessageBoxHelper.ShowError(this, ex.ToString());
@@ -261,7 +261,7 @@ namespace DBRestorer.Ctrl
             var pluginName = ((MenuItem)e.OriginalSource).Header.ToString();
             var plugin = Plugins.GetPlugins<IDbUtility>().FirstOrDefault(r => r.Value.PluginName == pluginName);
             plugin?.Value.Invoke(this,
-                _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestorOptVm.TargetDbName);
+                _viewModel.SqlInstancesVm.SelectedInst, _viewModel.DbRestoreOptVm.TargetDbName);
         }
 
         private void SettingsMenuClicked(object sender, RoutedEventArgs e)
