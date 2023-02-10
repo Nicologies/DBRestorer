@@ -14,7 +14,8 @@ if(Test-Path $squirrelInstallFolder)
 $dbRestorerRelativePath = "$PSScriptRoot/bin/Release/net462/DBRestorer.exe"
 $dbRestorerAbsolutePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($dbRestorerRelativePath)
 $assembly = [Reflection.Assembly]::Loadfile($dbRestorerAbsolutePath)
-$version = [Version]$assembly.GetName().version
+[Version]$version = [Version]$assembly.GetName().version
+Write-Host "Version from assembly is: $version"
 $nugetSemVer = $version.Major.ToString() + "." + $version.Minor + "." + $version.Build
 
 # for squirrel that requires semver
