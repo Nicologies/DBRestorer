@@ -2,7 +2,7 @@
 
 namespace DBRestorer.Ctrl.Domain
 {
-    public class DbRestorOptVm : ViewModelBaseEx
+    public class DbRestoreOptVm : ViewModelBaseEx
     {
         private string _RelocateLdfTo;
         private string _RelocateMdfTo;

@@ -19,24 +19,19 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 {
     private readonly ISqlServerUtil _sqlServerUtil;
     private readonly IUserPreferencePersist _userPreferencePersist;
-    private DbRestorOptVm _DbRestoreOption = new();
-    private bool _IsProcessing;
-    private int _Percent;
-    private bool _PercentageDisabled = true;
-    private string _ProgressDesc = "";
-    private SqlInstancesVm _SqlInstancesVm;
+    private readonly DbRestoreOptVm _dbRestoreOption = new();
 
     public MainWindowVm(ISqlServerUtil sqlServerUtil, IUserPreferencePersist userPreferencePersist)
     {
         _sqlServerUtil = sqlServerUtil;
         _userPreferencePersist = userPreferencePersist;
         SqlInstancesVm = new SqlInstancesVm(_sqlServerUtil, this, userPreferencePersist);
-        _DbRestoreOption.PropertyChanged += (_, args) =>
+        _dbRestoreOption.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(DbRestorOptVm.TargetDbName))
+            if (args.PropertyName == nameof(DbRestoreOptVm.TargetDbName))
             {
                 var pref = _userPreferencePersist.LoadPreference();
-                pref.LastUsedDbName = _DbRestoreOption.TargetDbName;
+                pref.LastUsedDbName = _dbRestoreOption.TargetDbName;
                 _userPreferencePersist.SavePreference(pref);
             }
         };
@@ -69,7 +64,7 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
         set;
     }
 
-    public DbRestorOptVm DbRestorOptVm
+    public DbRestoreOptVm DbRestoreOptVm
     {
         get;
         set;
@@ -191,7 +186,7 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
         Start(false, "Initializing...");
         try
         {
-            await _sqlServerUtil.Restore(DbRestorOptVm.GetDbRestoreOption(SqlInstancesVm.SelectedInst),
+            await _sqlServerUtil.Restore(DbRestoreOptVm.GetDbRestoreOption(SqlInstancesVm.SelectedInst),
                 this, OnRestored);
         }
         catch
@@ -217,6 +212,6 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
         await SqlInstancesVm.RetrieveInstanceAsync();
         await SqlInstancesVm.RetrieveDbNamesAsync(SqlInstancesVm.SelectedInst);
         var pref = _userPreferencePersist.LoadPreference();
-        DbRestorOptVm.TargetDbName = pref.LastUsedDbName;
+        DbRestoreOptVm.TargetDbName = pref.LastUsedDbName;
     }
 }
