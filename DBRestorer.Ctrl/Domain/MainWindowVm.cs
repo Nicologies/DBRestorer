@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,211 +11,210 @@ using ExtendedCL;
 using GalaSoft.MvvmLight.Threading;
 using Nicologies.WpfCommon.Utils;
 
-namespace DBRestorer.Ctrl.Domain
+namespace DBRestorer.Ctrl.Domain;
+
+public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 {
-    public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
+    private readonly ISqlServerUtil _sqlServerUtil;
+    private readonly IUserPreferencePersist _userPreferencePersist;
+    private DbRestorOptVm _DbRestoreOption = new();
+    private bool _IsProcessing;
+    private int _Percent;
+    private bool _PercentageDisabled = true;
+    private string _ProgressDesc = "";
+    private SqlInstancesVm _SqlInstancesVm;
+
+    public MainWindowVm(ISqlServerUtil sqlServerUtil, IUserPreferencePersist userPreferencePersist)
     {
-        private readonly ISqlServerUtil _sqlserverUtil;
-        private readonly IUserPreferencePersist _userPreferencePersist;
-        private DbRestorOptVm _DbRestoreOption = new DbRestorOptVm();
-        private bool _IsProcessing;
-        private int _Percent;
-        private bool _PercentageDisabled = true;
-        private string _ProgressDesc = "";
-        private SqlInstancesVm _SqlInstancesVm;
-
-        public MainWindowVm(ISqlServerUtil sqlserverUtil, IUserPreferencePersist userPreferencePersist)
+        _sqlServerUtil = sqlServerUtil;
+        _userPreferencePersist = userPreferencePersist;
+        SqlInstancesVm = new SqlInstancesVm(_sqlServerUtil, this, userPreferencePersist);
+        _DbRestoreOption.PropertyChanged += (_, args) =>
         {
-            _sqlserverUtil = sqlserverUtil;
-            _userPreferencePersist = userPreferencePersist;
-            SqlInstancesVm = new SqlInstancesVm(_sqlserverUtil, this, userPreferencePersist);
-            _DbRestoreOption.PropertyChanged += (sender, args) =>
+            if (args.PropertyName == nameof(DbRestorOptVm.TargetDbName))
             {
-                if (args.PropertyName == nameof(DbRestorOptVm.TargetDbName))
-                {
-                    var pref = _userPreferencePersist.LoadPreference();
-                    pref.LastUsedDbName = _DbRestoreOption.TargetDbName;
-                    _userPreferencePersist.SavePreference(pref);
-                }
-            };
-        }
-
-        public string ApplicationTitle
-        {
-            get
-            {
-                var ver = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductVersion;
-                return $"DBRestorer v{ver}";
+                var pref = _userPreferencePersist.LoadPreference();
+                pref.LastUsedDbName = _DbRestoreOption.TargetDbName;
+                _userPreferencePersist.SavePreference(pref);
             }
+        };
+    }
+
+    public string ApplicationTitle
+    {
+        get
+        {
+            var ver = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly()!.Location).ProductVersion;
+            return $"DBRestorer v{ver}";
+        }
+    }
+
+    public void LoadPlugins()
+    {
+        var plugins = Plugins.GetPlugins<IPostDbRestore>();
+        PostRestorePlugins.AddRange(plugins.Select(r => r.Value.PluginName));
+
+        var utilities = Plugins.GetPlugins<IDbUtility>();
+        Utilities.AddRange(utilities.Select(r => r.Value.PluginName));
+
+        var settings = Plugins.GetPlugins<IDbRestorerSettings>();
+        PluginSettings.AddRange(settings.Select(r => r.Value.Name));
+    }
+
+    public SqlInstancesVm SqlInstancesVm
+    {
+        get { return _SqlInstancesVm; }
+        private set { RaiseAndSetIfChanged(ref _SqlInstancesVm, value); }
+    }
+
+    public DbRestorOptVm DbRestorOptVm
+    {
+        get { return _DbRestoreOption; }
+        set { RaiseAndSetIfChanged(ref _DbRestoreOption, value); }
+    }
+
+    public int Percent
+    {
+        get { return _Percent; }
+        set { RaiseAndSetIfChanged(ref _Percent, value); }
+    }
+
+    public string ProgressDesc
+    {
+        get { return _ProgressDesc; }
+        set { RaiseAndSetIfChanged(ref _ProgressDesc, value); }
+    }
+
+    public bool PercentageDisabled
+    {
+        get { return _PercentageDisabled; }
+        set { RaiseAndSetIfChanged(ref _PercentageDisabled, value); }
+    }
+
+    public bool IsProcessing
+    {
+        get { return _IsProcessing; }
+        set { RaiseAndSetIfChanged(ref _IsProcessing, value); }
+    }
+
+    public async Task AutoUpdate()
+    {
+        var lastUpdateCheckTime = GetLastUpdateCheckTime();
+        var checkedRecently = lastUpdateCheckTime >= DateTime.Now.AddDays(-1);
+        if (checkedRecently)
+        {
+            return;
         }
 
-        public void LoadPlugins()
+        Start(true, "Checking new release");
+        try
         {
-            var plugins = Plugins.GetPlugins<IPostDbRestore>();
-            PostRestorePlugins.AddRange(plugins.Select(r => r.Value.PluginName));
+            SaveLastUpdateCheckTime();
 
-            var utilities = Plugins.GetPlugins<IDbUtility>();
-            Utilities.AddRange(utilities.Select(r => r.Value.PluginName));
-
-            var settings = Plugins.GetPlugins<IDbRestorerSettings>();
-            PluginSettings.AddRange(settings.Select(r => r.Value.Name));
+            await AutoUpdateSource.Source.Update(i => Percent = i);
         }
-
-        public SqlInstancesVm SqlInstancesVm
+        catch (Exception ex)
         {
-            get { return _SqlInstancesVm; }
-            private set { RaiseAndSetIfChanged(ref _SqlInstancesVm, value); }
+            MessengerInstance.Send(new ErrorMsg($"Failed to check new release {ex}"));
         }
-
-        public DbRestorOptVm DbRestorOptVm
+        finally
         {
-            get { return _DbRestoreOption; }
-            set { RaiseAndSetIfChanged(ref _DbRestoreOption, value); }
+            IsProcessing = false;
         }
+    }
 
-        public int Percent
-        {
-            get { return _Percent; }
-            set { RaiseAndSetIfChanged(ref _Percent, value); }
-        }
+    private DateTime GetLastUpdateCheckTime()
+    {
+        var pref = _userPreferencePersist.LoadPreference();
 
-        public string ProgressDesc
-        {
-            get { return _ProgressDesc; }
-            set { RaiseAndSetIfChanged(ref _ProgressDesc, value); }
-        }
+        var lastUpdateCheckTime = (pref.LastUpdateCheckTime ?? DateTime.MinValue);
+        return lastUpdateCheckTime;
+    }
 
-        public bool PercentageDisabled
-        {
-            get { return _PercentageDisabled; }
-            set { RaiseAndSetIfChanged(ref _PercentageDisabled, value); }
-        }
+    private void SaveLastUpdateCheckTime()
+    {
+        var pref = _userPreferencePersist.LoadPreference();
+        pref.LastUpdateCheckTime = DateTime.Now;
+        _userPreferencePersist.SavePreference(pref);
+    }
 
-        public bool IsProcessing
-        {
-            get { return _IsProcessing; }
-            set { RaiseAndSetIfChanged(ref _IsProcessing, value); }
-        }
+    public ObservableCollection<string> PostRestorePlugins
+    {
+        get; set;
+    } = new ObservableCollection<string>();
 
-        public async Task AutoUpdate()
+    public ObservableCollection<string> Utilities { get; set; } = new ObservableCollection<string>(); 
+    public ObservableCollection<string> PluginSettings { get; set; } = new ObservableCollection<string>(); 
+
+    public void OnCompleted(string msg)
+    {
+        DispatcherHelper.CheckBeginInvokeOnUI(() =>
         {
-            var lastUpdateCheckTime = GetLastUpdateCheckTime();
-            var checkedRecently = lastUpdateCheckTime >= DateTime.Now.AddDays(-1);
-            if (checkedRecently)
+            if (msg == SqlServerUtil.FinishedRestore)
             {
-                return;
+                MessengerInstance.Send(new CallPostRestorePlugins("Call PostRestore Plugins"));
             }
-
-            Start(true, "Checking new release");
-            try
+            IsProcessing = false;
+            if (!string.IsNullOrWhiteSpace(msg))
             {
-                SaveLastUpdateCheckTime();
-
-                await AutoUpdateSource.Source.Update(i => Percent = i);
+                MessengerInstance.Send(new SucceedMsg(msg));
             }
-            catch (Exception ex)
-            {
-                MessengerInstance.Send(new ErrorMsg($"Failed to check new release {ex}"));
-            }
-            finally
-            {
-                IsProcessing = false;
-            }
-        }
+        });
+    }
 
-        private DateTime GetLastUpdateCheckTime()
+    public void Start(bool willReportProgress, string taskDesc)
+    {
+        Percent = 0;
+        PercentageDisabled = !willReportProgress;
+        IsProcessing = true;
+        ProgressDesc = taskDesc;
+    }
+
+    public void OnError(string err)
+    {
+        DispatcherHelper.CheckBeginInvokeOnUI(() =>
         {
-            var pref = _userPreferencePersist.LoadPreference();
+            IsProcessing = false;
+            MessengerInstance.Send(new ErrorMsg(err));
+        });
+    }
 
-            var lastUpdateCheckTime = (pref.LastUpdateCheckTime ?? DateTime.MinValue);
-            return lastUpdateCheckTime;
-        }
+    public void ReportProgress(int percent)
+    {
+        DispatcherHelper.CheckBeginInvokeOnUI(() => Percent = percent);
+    }
 
-        private void SaveLastUpdateCheckTime()
+    public async Task Restore()
+    {
+        Start(false, "Initializing...");
+        try
         {
-            var pref = _userPreferencePersist.LoadPreference();
-            pref.LastUpdateCheckTime = DateTime.Now;
-            _userPreferencePersist.SavePreference(pref);
+            await _sqlServerUtil.Restore(DbRestorOptVm.GetDbRestoreOption(SqlInstancesVm.SelectedInst),
+                this, OnRestored);
         }
-
-        public ObservableCollection<string> PostRestorePlugins
+        catch
         {
-            get; set;
-        } = new ObservableCollection<string>();
-
-        public ObservableCollection<string> Utilities { get; set; } = new ObservableCollection<string>(); 
-        public ObservableCollection<string> PluginSettings { get; set; } = new ObservableCollection<string>(); 
-
-        public void OnCompleted(string msg)
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(() =>
-            {
-                if (msg == SqlServerUtil.FinishedRestore)
-                {
-                    MessengerInstance.Send(new CallPostRestorePlugins("Call PostRestore Plugins"));
-                }
-                IsProcessing = false;
-                if (!string.IsNullOrWhiteSpace(msg))
-                {
-                    MessengerInstance.Send(new SucceedMsg(msg));
-                }
-            });
+            IsProcessing = false;
+            throw;
         }
+    }
 
-        public void Start(bool willReportProgress, string taskDesc)
-        {
-            Percent = 0;
-            PercentageDisabled = !willReportProgress;
-            IsProcessing = true;
-            ProgressDesc = taskDesc;
-        }
+    private void OnRestored()
+    {
+        DispatcherHelper.CheckBeginInvokeOnUI(
+            async () => await SqlInstancesVm.RetrieveDbNamesAsync(SqlInstancesVm.SelectedInst));
+    }
 
-        public void OnError(string err)
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(() =>
-            {
-                IsProcessing = false;
-                MessengerInstance.Send(new ErrorMsg(err));
-            });
-        }
+    public void SaveInstSelection()
+    {
+        SqlInstancesVm.SavePreference();
+    }
 
-        public void ReportProgress(int percent)
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(() => Percent = percent);
-        }
-
-        public async Task Restore()
-        {
-            Start(false, "Initializing...");
-            try
-            {
-                await _sqlserverUtil.Restore(DbRestorOptVm.GetDbRestoreOption(SqlInstancesVm.SelectedInst),
-                    this, OnRestored);
-            }
-            catch
-            {
-                IsProcessing = false;
-                throw;
-            }
-        }
-
-        private void OnRestored()
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(
-                async () => await SqlInstancesVm.RetrieveDbNamesAsync(SqlInstancesVm.SelectedInst));
-        }
-
-        public void SaveInstSelection()
-        {
-            SqlInstancesVm.SavePreference();
-        }
-
-        public async Task LoadSqlInstanceAndDbs()
-        {
-            await SqlInstancesVm.RetrieveInstanceAsync();
-            await SqlInstancesVm.RetrieveDbNamesAsync(SqlInstancesVm.SelectedInst);
-            var pref = _userPreferencePersist.LoadPreference();
-            DbRestorOptVm.TargetDbName = pref.LastUsedDbName;
-        }
+    public async Task LoadSqlInstanceAndDbs()
+    {
+        await SqlInstancesVm.RetrieveInstanceAsync();
+        await SqlInstancesVm.RetrieveDbNamesAsync(SqlInstancesVm.SelectedInst);
+        var pref = _userPreferencePersist.LoadPreference();
+        DbRestorOptVm.TargetDbName = pref.LastUsedDbName;
     }
 }
