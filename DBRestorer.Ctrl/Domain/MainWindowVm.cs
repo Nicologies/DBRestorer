@@ -17,10 +17,10 @@ namespace DBRestorer.Ctrl.Domain;
 [AddINotifyPropertyChangedInterface]
 public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 {
-    private readonly ISqlServerUtil _sqlServerUtil;
+    private readonly SqlServerUtilBase _sqlServerUtil;
     private readonly IUserPreferencePersist _userPreferencePersist;
 
-    public MainWindowVm(ISqlServerUtil sqlServerUtil, IUserPreferencePersist userPreferencePersist)
+    public MainWindowVm(SqlServerUtilBase sqlServerUtil, IUserPreferencePersist userPreferencePersist)
     {
         _sqlServerUtil = sqlServerUtil;
         _userPreferencePersist = userPreferencePersist;
@@ -125,13 +125,10 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
         _userPreferencePersist.SavePreference(pref);
     }
 
-    public ObservableCollection<string> PostRestorePlugins
-    {
-        get; set;
-    } = new ObservableCollection<string>();
+    public ObservableCollection<string> PostRestorePlugins { get; set; } = new();
 
-    public ObservableCollection<string> Utilities { get; set; } = new ObservableCollection<string>(); 
-    public ObservableCollection<string> PluginSettings { get; set; } = new ObservableCollection<string>(); 
+    public ObservableCollection<string> Utilities { get; set; } = new(); 
+    public ObservableCollection<string> PluginSettings { get; set; } = new(); 
 
     public void OnCompleted(string msg)
     {

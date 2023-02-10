@@ -1,14 +1,13 @@
 ﻿using GalaSoft.MvvmLight.Threading;
 using NUnit.Framework;
 
-namespace DBRestorer.Test
+namespace DBRestorer.Test;
+
+public class GlobalSetup
 {
-    public class GlobalSetup
+    [OneTimeSetUp]
+    public void SetUp()
     {
-        [OneTimeSetUp]
-        public void SetUp()
-        {
-            DispatcherHelper.Initialize();
-        }
+        DispatcherHelper.Initialize();
     }
 }

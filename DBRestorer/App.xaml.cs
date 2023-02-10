@@ -7,76 +7,73 @@ using System.Windows;
 using Nicologies;
 using GalaSoft.MvvmLight.Threading;
 using Microsoft.Win32;
-using DBRestorer.Ctrl;
 using DBRestorer.Ctrl.Domain;
-using DBRestorer.Ctrl.PluginManagement;
 
-namespace DBRestorer
+namespace DBRestorer;
+
+/// <summary>
+///     Interaction logic for App.xaml
+/// </summary>
+public partial class App
 {
-    /// <summary>
-    ///     Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    public App()
     {
-        public App()
+        AutoUpdateSource.Source = new AutoUpdateFromGitHubRelease();
+        ViewModelLocator.BootStrap();
+    }
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        if (!Directory.Exists(PathHelper.ProcessAppDir))
         {
-            AutoUpdateSource.Source = new AutoUpdateFromGitHubRelease();
-            ViewModelLocator.BootStrap();
+            Directory.CreateDirectory(PathHelper.ProcessAppDir);
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        var userPreferencePersist = new UserPreferencePersist();
+        var pref = userPreferencePersist.LoadPreference();
+
+        DispatcherHelper.Initialize();
+        base.OnStartup(e);
+        Task.Run(SetAddRemoveProgramsIcon);
+    }
+
+    private static void SetAddRemoveProgramsIcon()
+    {
+        //only run if deployed 
+        if (ApplicationDeployment.IsNetworkDeployed
+            && ApplicationDeployment.CurrentDeployment.IsFirstRun)
         {
-            if (!Directory.Exists(PathHelper.ProcessAppDir))
+            try
             {
-                Directory.CreateDirectory(PathHelper.ProcessAppDir);
-            }
+                var code = Assembly.GetExecutingAssembly();
+                var description =
+                    (AssemblyDescriptionAttribute)
+                    Attribute.GetCustomAttribute(code, typeof (AssemblyDescriptionAttribute));
+                var assemblyDescription = description.Description;
 
-            var userPreferencePersist = new UserPreferencePersist();
-            var pref = userPreferencePersist.LoadPreference();
+                //the icon is included in this program
+                var iconSourcePath = Path.Combine(PathHelper.ProcessDir, "dbrestorer.ico");
 
-            DispatcherHelper.Initialize();
-            base.OnStartup(e);
-            Task.Run(SetAddRemoveProgramsIcon);
-        }
+                if (!File.Exists(iconSourcePath))
+                    return;
 
-        private static void SetAddRemoveProgramsIcon()
-        {
-            //only run if deployed 
-            if (ApplicationDeployment.IsNetworkDeployed
-                && ApplicationDeployment.CurrentDeployment.IsFirstRun)
-            {
-                try
+                var myUninstallKey =
+                    Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
+                var mySubKeyNames = myUninstallKey!.GetSubKeyNames();
+                foreach (var name in mySubKeyNames)
                 {
-                    var code = Assembly.GetExecutingAssembly();
-                    var asdescription =
-                        (AssemblyDescriptionAttribute)
-                            Attribute.GetCustomAttribute(code, typeof (AssemblyDescriptionAttribute));
-                    var assemblyDescription = asdescription.Description;
-
-                    //the icon is included in this program
-                    var iconSourcePath = Path.Combine(PathHelper.ProcessDir, "dbrestorer.ico");
-
-                    if (!File.Exists(iconSourcePath))
-                        return;
-
-                    var myUninstallKey =
-                        Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-                    var mySubKeyNames = myUninstallKey.GetSubKeyNames();
-                    foreach (var name in mySubKeyNames)
+                    var myKey = myUninstallKey.OpenSubKey(name, true);
+                    var myValue = myKey.GetValue("DisplayName");
+                    if (myValue != null && myValue.ToString() == assemblyDescription)
                     {
-                        var myKey = myUninstallKey.OpenSubKey(name, true);
-                        var myValue = myKey.GetValue("DisplayName");
-                        if (myValue != null && myValue.ToString() == assemblyDescription)
-                        {
-                            myKey.SetValue("DisplayIcon", iconSourcePath);
-                            break;
-                        }
+                        myKey.SetValue("DisplayIcon", iconSourcePath);
+                        break;
                     }
                 }
-                catch (Exception)
-                {
-                    //log an error
-                }
+            }
+            catch (Exception)
+            {
+                //log an error
             }
         }
     }

@@ -14,10 +14,10 @@ namespace DBRestorer.Ctrl.Domain
         public const string RetrivingDbNames = "Retrieving Database Names...";
         private readonly IProgressBarProvider _ProgressBarProvider;
         private readonly IUserPreferencePersist _userPreference;
-        private readonly ISqlServerUtil _util;
+        private readonly SqlServerUtilBase _util;
         private string _SelectedInst;
 
-        public SqlInstancesVm(ISqlServerUtil util, 
+        public SqlInstancesVm(SqlServerUtilBase util, 
             IProgressBarProvider progressBarProvider, IUserPreferencePersist userPreference)
         {
             Instances = new ObservableCollection<string>();
@@ -81,7 +81,7 @@ namespace DBRestorer.Ctrl.Domain
             }
             _ProgressBarProvider.Start(false, RetrivingDbNames);
             var dbNames = await Task.Run(() => _util.GetDatabaseNames(mssqlserver));
-            DbNames.Assign(dbNames.Except(ISqlServerUtil.SystemDatabases, StringComparer.InvariantCultureIgnoreCase));
+            DbNames.Assign(dbNames.Except(SqlServerUtilBase.SystemDatabases, StringComparer.InvariantCultureIgnoreCase));
             _ProgressBarProvider.OnCompleted(null);
         }
 
