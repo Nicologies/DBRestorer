@@ -6,4 +6,5 @@ if($LastExitCode -ne 0)
     Write-Error $err
     Exit $LastExitCode
 }
+Write-Host "Build finished, now creating the installer"
 . $PSScriptRoot/DBRestorer/CreateInstaller.ps1

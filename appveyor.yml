@@ -1,12 +1,12 @@
 version: 2.0.7189.{build}
 
-os: Visual Studio 2019
+os: Visual Studio 2022
 
 skip_tags: true
 
 environment:
   matrix:
-  - IdeVersion: VS2019
+    - IdeVersion: VS2022
   SKIP_PAUSE: TRUE
   ARCHIVE_WITH_PDB: TRUE
   ARTIFACT_SIGNING_ENABLED: TRUE
@@ -20,31 +20,30 @@ build:
   verbosity: minimal
 
 install:
-- cmd: git submodule update --init --recursive
-- cmd: echo /logger:"%ProgramFiles%\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll">> Directory.Build.rsp
-- ps: |
-    if ($env:APPVEYOR_REPO_BRANCH.StartsWith("release/")) {
-       $ver = $env:APPVEYOR_REPO_BRANCH.Replace("release/", "")
-       $env:APPVEYOR_BUILD_VERSION = "$ver.$($env:APPVEYOR_BUILD_NUMBER)"
-       Update-AppveyorBuild -Version $env:APPVEYOR_BUILD_VERSION       
-    }
-    
-    & .\SetVersion.ps1 -version $env:APPVEYOR_BUILD_VERSION
+  - cmd: git submodule update --init --recursive
+  - cmd: echo /logger:"%ProgramFiles%\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll">> Directory.Build.rsp
+  - ps: |
+      if ($env:APPVEYOR_REPO_BRANCH.StartsWith("release/")) {
+         $ver = $env:APPVEYOR_REPO_BRANCH.Replace("release/", "")
+         $env:APPVEYOR_BUILD_VERSION = "$ver.$($env:APPVEYOR_BUILD_NUMBER)"
+         Update-AppveyorBuild -Version $env:APPVEYOR_BUILD_VERSION
+      }
 
+      & .\SetVersion.ps1 -version $env:APPVEYOR_BUILD_VERSION
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-- ps: |
-    Write-Output "Platform: $env:IdeVersion"
+  - ps: |
+      Write-Output "Platform: $env:IdeVersion"
 
-    # for release branches mark the repo as clean
-    if (!$env:APPVEYOR_PULL_REQUEST_TITLE -and $env:APPVEYOR_REPO_BRANCH.StartsWith("release/")) {
-      git clean -dxf
-    }
+      # for release branches mark the repo as clean
+      if (!$env:APPVEYOR_PULL_REQUEST_TITLE -and $env:APPVEYOR_REPO_BRANCH.StartsWith("release/")) {
+        git clean -dxf
+      }
 
-    # build
-    & .\Build.ps1
-    & .\DBRestorer.Plugin.Interface\CreateNugetPackages.ps1
+      # build
+      & .\Build.ps1
+      & .\DBRestorer.Plugin.Interface\CreateNugetPackages.ps1
 
 artifacts:
   # upload the generated portable archive only
@@ -63,4 +62,3 @@ deploy:
   APPVEYOR_REPO_TAG: false
   on:
     branch: /release\/.*/
-

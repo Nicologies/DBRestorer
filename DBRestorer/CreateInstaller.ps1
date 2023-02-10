@@ -11,7 +11,7 @@ if(Test-Path $squirrelInstallFolder)
 {
     Remove-Item -Force -Recurse $squirrelInstallFolder
 }
-$dbRestorerRelativePath = "$PSScriptRoot/bin/Release/DBRestorer.exe"
+$dbRestorerRelativePath = "$PSScriptRoot/bin/Release/net462/DBRestorer.exe"
 $dbRestorerAbsolutePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($dbRestorerRelativePath)
 $assembly = [Reflection.Assembly]::Loadfile($dbRestorerAbsolutePath)
 $version = [Version]$assembly.GetName().version
@@ -36,7 +36,7 @@ function ExecuteProcessAndWait([string]$processFileName, [string]$processParamet
 	$p.StartInfo = $pinfo
 	$p.Start() | Out-Null
     $output = $p.StandardOutput.ReadToEnd()
-    
+
     if (-not ([string]::IsNullOrWhiteSpace($output)))
     {
         Write-Error $output
@@ -46,7 +46,7 @@ function ExecuteProcessAndWait([string]$processFileName, [string]$processParamet
     {
         Write-Error $errors
     }
-	$p.WaitForExit() | Out-Null    
+	$p.WaitForExit() | Out-Null
 	return $p.ExitCode
 }
 
