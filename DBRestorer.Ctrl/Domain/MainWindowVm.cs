@@ -10,9 +10,11 @@ using DBRestorer.Plugin.Interface;
 using ExtendedCL;
 using GalaSoft.MvvmLight.Threading;
 using Nicologies.WpfCommon.Utils;
+using PropertyChanged;
 
 namespace DBRestorer.Ctrl.Domain;
 
+[AddINotifyPropertyChangedInterface]
 public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 {
     private readonly ISqlServerUtil _sqlServerUtil;
@@ -63,38 +65,38 @@ public class MainWindowVm : ViewModelBaseEx, IProgressBarProvider
 
     public SqlInstancesVm SqlInstancesVm
     {
-        get { return _SqlInstancesVm; }
-        private set { RaiseAndSetIfChanged(ref _SqlInstancesVm, value); }
+        get;
+        set;
     }
 
     public DbRestorOptVm DbRestorOptVm
     {
-        get { return _DbRestoreOption; }
-        set { RaiseAndSetIfChanged(ref _DbRestoreOption, value); }
+        get;
+        set;
     }
 
     public int Percent
     {
-        get { return _Percent; }
-        set { RaiseAndSetIfChanged(ref _Percent, value); }
+        get;
+        set;
     }
 
     public string ProgressDesc
     {
-        get { return _ProgressDesc; }
-        set { RaiseAndSetIfChanged(ref _ProgressDesc, value); }
+        get;
+        set;
     }
 
     public bool PercentageDisabled
     {
-        get { return _PercentageDisabled; }
-        set { RaiseAndSetIfChanged(ref _PercentageDisabled, value); }
-    }
+        get;
+        set;
+    } = true;
 
     public bool IsProcessing
     {
-        get { return _IsProcessing; }
-        set { RaiseAndSetIfChanged(ref _IsProcessing, value); }
+        get;
+        set;
     }
 
     public async Task AutoUpdate()
